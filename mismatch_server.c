@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 
 	// defining a socket
 	int serv_socket_fd; // the file descriptor for server
-	int port = 56288;
+	int port = 56288;  //<--- you defined port here
 	if((serv_socket_fd = socket(AF_INET, SOCK_STREAM,0)) < 0){
 		perror("socket");
 		exit(1);
@@ -84,23 +84,22 @@ int main(int argc, char **argv)
 		printf("connection from %s\n", inet_ntoa(client_addr.sin_addr));
 		addclient(client_fd, client_addr.sin_addr);
 		int tttt;
-		while (1) {
+		while (1) {  //<---- loop needs exit
 		    fd_set fdlist;
-		    struct timeval tv;
 		    FD_ZERO(&fdlist);
 		    FD_SET(client_fd, &fdlist);
-		    tv.tv_sec = 15;
-		    tv.tv_usec = 0;
-		    switch (select(client_fd+1, &fdlist, NULL, NULL, &tv)){
-				case 0:
+		    switch (select(serv_socket_fd+1, &fdlist, NULL, NULL, NULL)){
+				case 0: // case where client exit
 					printf("abcd\n");
 					removeclient(client_fd);
 					break;
-				case -1:
-					perror("select\n");
+				case -1: // error
+					perror("select");
 					break;
-				default:
+				default:  // case where we do something
 					printf("hahaha\n");
+
+					//2 cases, new connection or exist connection
 		    }	    
 		}
 	}
