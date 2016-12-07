@@ -13,6 +13,12 @@
 #include <sys/signal.h>
 
 
+// -------QQQQQ: without defining the port, I can still connect it-------QQQQQQ
+// --- define the port that the server looking forward to listen to
+#ifndef PORT
+  #define PORT 56288
+#endif
+
 // defining a struct for client
 //struct client *head = NULL;
 struct client {
@@ -32,7 +38,7 @@ int main(int argc, char **argv)
 
 
 	// defining a socket
-	int serv_socket_fd;
+	int serv_socket_fd; // the file descriptor for server
 	int port = 56288;
 	if((serv_socket_fd = socket(AF_INET, SOCK_STREAM,0)) < 0){
 		perror("socket");
@@ -57,17 +63,24 @@ int main(int argc, char **argv)
 	if (listen(serv_socket_fd, 5)){
 		perror("listen");
 		return(1);
+	} else {
+		printf("listening on port %d", port);
 	}
 
 	// accept
 	while(1){
 		struct sockaddr_in client_addr;
 		int len = sizeof (client_addr); 
-		int client_fd;
+		// store the fd returned by the accept and ask fot their name
+		int client_fd; 
 		if ((client_fd = accept(serv_socket_fd, (struct sockaddr *)&client_addr, &len)) < 0) {
 			perror("accept");
 			return(1);
 		}
+		// ############# get the name of the client ######
+		printf("What is your username?");
+		scanf("%s", client_addr.username);
+
 		printf("connection from %s\n", inet_ntoa(client_addr.sin_addr));
 		addclient(client_fd, client_addr.sin_addr);
 		int tttt;
@@ -88,10 +101,18 @@ int main(int argc, char **argv)
 					break;
 				default:
 					printf("hahaha\n");
-		    }
-		    
+		    }	    
 		}
+	}
 
+	// ------ add this part before the program exit 
+	// ------ so that the port will be released as soon as your server
+	// ------ process terminates
+	int on = 1;
+	int status = setsockopt([sock_fd], SOL_SOCKET, SO_REUSEADDR,
+		(const char *) &on, sizeof(on));
+	if(status == -1) {
+		perror("setsockopt -- REUSEADDR");
 	}
 	return(0);
 }
@@ -114,7 +135,6 @@ void addclient(int fd, struct in_addr add){
 
 void removeclient(int fd){
 	struct client *p = &head;
-
 	// -----------QQQ try to find a way to reduce the running time
 	while(p != NULL){
 		p = p->next;
