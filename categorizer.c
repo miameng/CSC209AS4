@@ -53,7 +53,9 @@ int main (int argc, char **argv) {
             continue;
         
         // check whether the user with this name already exists
-        Node *user_list = *oppo_list = find_user(root, name);
+        Node *user_list, *opp_user_list; 
+        opp_user_list = NULL;
+        user_list = find_user(root, name);
         
         if (!user_list){
             // find the list of friends to which the user should be attached
@@ -75,7 +77,7 @@ int main (int argc, char **argv) {
                     continue;
 
                 opp_prev = opp_curr;
-		opp_curr = find_branch(opp_curr, 1-ans);
+		        opp_curr = find_branch(opp_curr, 1-ans);
         
                 prev = curr;
                 curr = find_branch(curr, ans);
@@ -83,7 +85,7 @@ int main (int argc, char **argv) {
                 i = i->next;
             }
 		
-	    opp_user_list = opp_prev->children[ans].fchild;
+	        opp_user_list = opp_prev->children[1-ans].fchild;
 	            
             // add user to the end of the list
             user_list = prev->children[ans].fchild;
@@ -91,9 +93,9 @@ int main (int argc, char **argv) {
         }
         
         // print list of potential friends
-   	// print_friends(user_list, name);  
-
-	print_opposite_friends(opp_user_list);
+   	//print_friends(user_list, name);  
+    print_opposite_friends(opp_user_list);
+	//   print_opposite_friends(opp_user_list);
     }
     
     return 0;
@@ -161,16 +163,20 @@ int validate_answer(char *answer){
 
 //print the list of opposite friends for user
 void print_opposite_friends(Node *list){
-	if(list == NULL){
-		printf("No completing personalities found. Please try again later\n")
-	}
-	else{
-	    printf("Here are your best mismatches:\n");
 
-	    while(list){
-		printf("%s, ", list->str);
-		list = list->next;
-	}
+
+    if(list == NULL){
+        printf("No completing personalities found. Please try again later\n");   
+    }
+    else{
+        printf("Here are your best mismatches:\n");
+        while(list){
+            printf("%s, ", list->str);
+	        list = list->next;
+        }
+        printf("\n");
+    }
+}
 
 
 // print list of potential friends for user
