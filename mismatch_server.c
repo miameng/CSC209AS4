@@ -51,6 +51,10 @@ int main(int argc, char **argv)
         printf ("Usage: mismatch_server text_file\n");
         return 1;
     }
+<<<<<<< HEAD
+
+=======
+>>>>>>> master
     // get interest
     interests = get_list_from_file(argv[1]);
 
@@ -122,6 +126,10 @@ int main(int argc, char **argv)
 					break;
 			// if curr equals to null, this means we've loop through the linkedlist
 			// and none of the client is talking to the server
+<<<<<<< HEAD
+
+=======
+>>>>>>> master
 			// curr exists, there is someone talking to the server	
 			if (curr){
 				// case with existing connection
@@ -164,6 +172,10 @@ int main(int argc, char **argv)
 			//			printf("%d ---\n", curr->state);
 
 						cmdresult = process_args(cmd_argc, &cmd_argv, &root, interests, curr, head);
+<<<<<<< HEAD
+						
+=======
+>>>>>>> master
 						switch (cmdresult){
 							case -1:
 								write(curr->fd, goodbye, strlen(goodbye));
@@ -248,6 +260,10 @@ void removeclient(int fd){
     } else {
 		fprintf(stderr, "Trying to remove fd %d, but I don't know about it\n", fd);
     }
+<<<<<<< HEAD
+
+=======
+>>>>>>> master
 }
 
 void newconnection(int serv_socket_fd){
@@ -275,6 +291,36 @@ void wrap_up(){
 // print list of potential friends for user
 void print_friends(Node *list, char *name){
     int friends = 0;
+<<<<<<< HEAD
+=======
+
+    // iterate over user list and count the number of friends
+    while (list) {
+	// ignore this user
+        if (strcmp(list->str, name)) {
+            friends++;
+             
+	    // if this is the first friend found, print successful message    
+            if (friends == 1)
+                printf(pos_result1, name);
+            
+	    // if friend was found, print his/her name
+            printf("%s, ", list->str);
+        }
+            
+        list = list->next;
+    }
+    
+    // if friends were found, print the number of friends    
+    if (friends){
+        printf("\n");
+        printf(pos_result2, friends);
+        
+    } else {
+        printf("%s", neg_result);    
+    }
+}
+>>>>>>> master
 
     // iterate over user list and count the number of friends
     while (list) {
@@ -303,7 +349,30 @@ void print_friends(Node *list, char *name){
     }
 }
 
+int find_network_newline (char *buf, int inbuf) {
+	int i;
+	for (i = 0; i < inbuf - 1; i++)
+		if ((buf[i] == '\r') && (buf[i + 1] == '\n'))
+			return i;
+	return -1;
+}
 
+<<<<<<< HEAD
+int read_from_client(char* userinput, Client *curr){
+	//userinput = curr.buf + curr.inbuf;
+	int room = BUFFER_SIZE - curr->inbuf;
+	int nbytes;
+	//read next message into remaining room in buffer
+	if ((nbytes = read(curr->fd, userinput, room)) > 0) {
+		curr->inbuf += nbytes;
+		int where = find_network_newline (curr->buf, curr->inbuf); //find new line
+		if (where >= 0) {
+		curr->buf[where] = '\0'; curr->buf[where+1] = '\0';
+		//do_command (buf); //process buffer up to a new line
+		where+=2;
+		curr->inbuf -= where;
+		memmove (curr->buf, curr->buf + where, curr->inbuf);
+=======
 int find_network_newline (char *buf, int inbuf) {
 	int i;
 	for (i = 0; i < inbuf - 1; i++)
@@ -326,6 +395,7 @@ int read_from_client(char* userinput, Client curr){
 		where+=2;
 		curr.inbuf -= where;
 		memmove (curr.buf, curr.buf + where, curr.inbuf);
+>>>>>>> master
 		}
 	}
 	return nbytes;
