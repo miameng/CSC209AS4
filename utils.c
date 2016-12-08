@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "utils.h"
-
+char *collect = "Collecting your interests\n";
 /*
  * Print a formatted error message to stderr.
  */
@@ -32,7 +32,9 @@ int process_args(int cmd_argc, char **cmd_argv, QNode **root, Node *interests,
 		 */
 		if (current_client->state > 1 + NUM_QUESTION)
 			return -3;
-		current_client->state = current_client->state + 1;
+		write(current_client->fd, collect, strlen(collect));
+		// get next question
+		current_client->state = 1;
 		return 1;
 
 	} else if (strcmp(cmd_argv[0], "get_all") == 0 && cmd_argc == 1) {
@@ -51,16 +53,19 @@ int process_args(int cmd_argc, char **cmd_argv, QNode **root, Node *interests,
 		 if (current_client->state != 5)
 		 	// client need to finish tests first
 		 	return 5;
-/*
+
 	} else if (validate_answer(cmd_argv[0]) != 2 && cmd_argc == 1) {
+
 		QNode *prev;
 		int ans;
         prev = qtree;
         ans = validate_answer(cmd_argv[0]);
+
+        //return_question(root, current_client->state);
  
         prev = qtree;
         qtree = find_branch(qtree, ans);
-*/
+
 	}
 	else {
 		/* The input message is not properly formatted. */

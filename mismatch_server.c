@@ -29,7 +29,7 @@ char *greeting = "Welcome\nGo ahead and enter user commands>\n";
 char *goodbye = "Goodbye!!\n";
 char *errormsg = "The command is not valid at this stage.\n";
 char *emptymsg = "No command is recieved\n";
-char *collect = "Collecting your interests\n";
+//char *collect = "Collecting your interests\n";
 char *havetest = "You have already done your test\n";
 char *neg_result = "Sorry, no users with similar interests joined yet\n\n";
 char *pos_result1 = "friend recommendation for user %s:\n";
@@ -168,14 +168,9 @@ int main(int argc, char **argv)
 							case -4:
 								write(curr->fd, emptymsg, strlen(emptymsg));
 							case 1:
-								write(curr->fd, collect, strlen(collect));
+								//write(curr->fd, collect, strlen(collect));
 							default:
-<<<<<<< HEAD
 								printf("a");
-								
-=======
-								write(curr->fd, emptymsg, strlen(emptymsg));								
->>>>>>> b9f3d3930b585e8ba998cd8fa1697e8f34841645
 						}
 					}
 				} else {
@@ -254,7 +249,6 @@ void newconnection(int serv_socket_fd){
 	addclient(client_fd, client_addr.sin_addr);
 }
 
-<<<<<<< HEAD
 void wrap_up(){
     //end of main loop - the user typed "q"
     print_qtree (root, 0);
@@ -294,15 +288,6 @@ void print_friends(Node *list, char *name){
     } else {
         printf("%s", neg_result);    
     }
-=======
-int find_network_newline (char *buf, int inbuf) {
-	int i;
-	for (i = 0; i < inbuf - 1; i++)
-		if ((buf[i] == '\r') && (buf[i + 1] == '\n'))
-			return i;
-	return -1;
-
->>>>>>> b9f3d3930b585e8ba998cd8fa1697e8f34841645
 }
 
 
