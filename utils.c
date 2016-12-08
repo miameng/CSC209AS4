@@ -112,6 +112,7 @@ int process_args(int cmd_argc, char **cmd_argv, QNode **root, Node *interests,
         	write(current_client->fd, test_complete, strlen(test_complete));
         	current_client->state++;
         	store_user(*root, current_client->username, current_client->answer);
+        	// Print tree for testing purpose
         	print_qtree(*root, 0);
         }
         else{

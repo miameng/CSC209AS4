@@ -176,8 +176,6 @@ char* get_opposite_friends(QNode *root, int* answer){
     return get_opposite_friends_helper(opp_user_list);
 }
 
-
-
 //print the list of opposite friends for user
 char* get_opposite_friends_helper(Node *list){
 
