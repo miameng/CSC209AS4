@@ -308,7 +308,7 @@ int find_network_newline (char *buf, int inbuf) {
 	int i;
 	for (i = 0; i < inbuf - 1; i++)
 		if ((buf[i] == '\r') && (buf[i + 1] == '\n'))
-			return (i+1);
+			return (i);
 	return -1;
 }
 
