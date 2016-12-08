@@ -20,9 +20,12 @@
 #endif
 
 Client *head = NULL;
+char userinput[BUFFER_SIZE];
+QNode *root = NULL;
+Node *interests = NULL;
 char *askname = "What is your user name?\n";
 char *greeting = "Welcome\nGo ahead and enter user commands>\n";
-
+char *goodbye = "Goodbye\n";
 void addclient(int fd, struct in_addr add);
 void removeclient(int fd);
 
@@ -30,6 +33,9 @@ void removeclient(int fd);
 int main(int argc, char **argv)
 {
 	Client *curr;
+	int cmd_argc;
+	char **cmd_argv;
+	int cmdresult;
 	extern void newconnection(int serv_socket_fd);
 
 	// argument check
@@ -126,7 +132,24 @@ int main(int argc, char **argv)
 						write(curr->fd, greeting, strlen(greeting));
 					}
 				} else if (curr->state == 1){
-
+					int len = read(curr->fd, userinput, sizeof userinput);
+					if (len < 0){
+				    	perror("read");
+				    } else if (len == 0) {
+				    	// innet_ntoa: turn an address into a string 
+						removeclient(curr->fd);
+				    } else{
+						cmd_argc = tokenize(userinput, &cmd_argv);
+						cmdresult = process_args(cmd_argc, &cmd_argv, &root, interests, curr, head);
+						switch (cmdresult){
+							case -1:
+								write(curr->fd, goodbye, strlen(goodbye));
+								removeclient(curr->fd);
+								close(curr->fd);
+							case 0:
+								
+						}
+					}
 				}
 				else {
 					
