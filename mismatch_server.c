@@ -17,7 +17,11 @@
 // -------QQQQQ: without defining the port, I can still connect it-------QQQQQQ
 // --- define the port that the server looking forward to listen to
 #ifndef PORT
+<<<<<<< HEAD
   #define PORT 56289
+=======
+  #define PORT 56288
+>>>>>>> bade8b304836f9f4f6e52e60ec6699b5051488c3
 #endif
 
 Client *head = NULL;
@@ -51,10 +55,17 @@ int main(int argc, char **argv)
         printf ("Usage: mismatch_server text_file\n");
         return 1;
     }
+<<<<<<< HEAD
 
     // get interest
     interests = get_list_from_file(argv[1]);
 
+=======
+
+    // get interest
+    interests = get_list_from_file(argv[1]);
+
+>>>>>>> bade8b304836f9f4f6e52e60ec6699b5051488c3
     // build question tree
     root = add_next_level (root,  interests);
 
@@ -123,6 +134,7 @@ int main(int argc, char **argv)
 					break;
 			// if curr equals to null, this means we've loop through the linkedlist
 			// and none of the client is talking to the server
+<<<<<<< HEAD
 
 			// curr exists, there is someone talking to the server	
 			if (curr){
@@ -159,11 +171,58 @@ int main(int argc, char **argv)
 						cmd_argc = tokenize(userinput, &cmd_argv);
 						printf("%s\n", cmd_argc);
 						cmdresult = process_args(cmd_argc, &cmd_argv, &root, interests, curr, head);
+=======
+
+			// curr exists, there is someone talking to the server	
+			if (curr){
+				// case with existing connection
+				// already accepted 
+				if (curr->state == -1) {
+					// get user name
+					char username[MAX_NAME];
+					// return how many bytes have been read in
+					// int len = read(curr->fd, username, sizeof username);
+					int len = read_from_client(username, curr);
+					if (len < 0){
+				    	perror("read");
+				    } else if (len == 0) {
+				    	// innet_ntoa: turn an address into a string 
+						removeclient(curr->fd);
+				    } else{
+					    if (len > 128)
+					    	username[127] = '\0';
+					    strcpy(curr->username, username);
+						curr->state = 0;
+						write(curr->fd, greeting, strlen(greeting));
+					}
+				} else if (curr->state <= NUM_QUESTION){
+					// user is answering questions
+					//int len = read(curr->fd, userinput, sizeof userinput);
+					int len = read_from_client(userinput, curr);
+					if (len < 0){
+				    	perror("read");
+				    } else if (len == 0) {
+				    	// innet_ntoa: turn an address into a string 
+						removeclient(curr->fd);
+				    } else{
+						cmd_argc = tokenize(userinput, &cmd_argv);
+
+			//			printf("%d\n", cmd_argc);
+						printf("%s\n", userinput);
+			//			printf("%s\n", curr->username);
+			//			printf("%d\n", curr->fd);
+			//			printf("%s\n", cmd_argv[0]);
+			//			printf("%d ---\n", curr->state);
+
+						cmdresult = process_args(cmd_argc, &cmd_argv, &root, interests, curr, head);
+						
+>>>>>>> bade8b304836f9f4f6e52e60ec6699b5051488c3
 						switch (cmdresult){
 							case -1:
 								write(curr->fd, goodbye, strlen(goodbye));
 								removeclient(curr->fd);
 								close(curr->fd);
+<<<<<<< HEAD
 							case -2:
 								write(curr->fd, errormsg, strlen(errormsg));
 							case -3:
@@ -174,6 +233,24 @@ int main(int argc, char **argv)
 								//write(curr->fd, collect, strlen(collect));
 							default:
 								printf("a\n");
+=======
+								break;
+							case -2:
+								write(curr->fd, errormsg, strlen(errormsg));
+								break;
+							case -3:
+								write(curr->fd, havetest, strlen(havetest));
+								break;
+							case -4:
+								write(curr->fd, emptymsg, strlen(emptymsg));
+								break;
+							case 1:
+								//printf("");
+								break;
+								//write(curr->fd, collect, strlen(collect));
+							default:
+								break;
+>>>>>>> bade8b304836f9f4f6e52e60ec6699b5051488c3
 						}
 					}
 				} else {
@@ -237,9 +314,35 @@ void removeclient(int fd){
     } else {
 		fprintf(stderr, "Trying to remove fd %d, but I don't know about it\n", fd);
     }
+<<<<<<< HEAD
+=======
 
 }
 
+void newconnection(int serv_socket_fd){
+	struct sockaddr_in client_addr;
+	socklen_t socklen = sizeof client_addr;
+	// store the fd returned by the accept and ask fot their name
+	int client_fd; 
+	if ((client_fd = accept(serv_socket_fd, (struct sockaddr *)&client_addr, &socklen)) < 0) {
+		perror("accept");
+	}
+	printf("connection from %s\n", inet_ntoa(client_addr.sin_addr));
+	addclient(client_fd, client_addr.sin_addr);
+}
+>>>>>>> bade8b304836f9f4f6e52e60ec6699b5051488c3
+
+void wrap_up(){
+    //end of main loop - the user typed "q"
+    print_qtree (root, 0);
+    
+    free_list (interests);
+    free_qtree(root);
+    
+    exit(0);
+}
+
+<<<<<<< HEAD
 void newconnection(int serv_socket_fd){
 	struct sockaddr_in client_addr;
 	socklen_t socklen = sizeof client_addr;
@@ -262,6 +365,8 @@ void wrap_up(){
     exit(0);
 }
 
+=======
+>>>>>>> bade8b304836f9f4f6e52e60ec6699b5051488c3
 // print list of potential friends for user
 void print_friends(Node *list, char *name){
     int friends = 0;
@@ -292,6 +397,7 @@ void print_friends(Node *list, char *name){
         printf("%s", neg_result);    
     }
 }
+<<<<<<< HEAD
 
 int find_network_newline (char *buf, int inbuf) {
 	int i;
@@ -315,6 +421,31 @@ int read_from_client(char* userinput, Client curr){
 		where+=2;
 		curr.inbuf -= where;
 		memmove (curr.buf, curr.buf + where, curr.inbuf);
+=======
+
+int find_network_newline (char *buf, int inbuf) {
+	int i;
+	for (i = 0; i < inbuf - 1; i++)
+		if ((buf[i] == '\r') && (buf[i + 1] == '\n'))
+			return i;
+	return -1;
+}
+
+int read_from_client(char* userinput, Client *curr){
+	//userinput = curr.buf + curr.inbuf;
+	int room = BUFFER_SIZE - curr->inbuf;
+	int nbytes;
+	//read next message into remaining room in buffer
+	if ((nbytes = read(curr->fd, userinput, room)) > 0) {
+		curr->inbuf += nbytes;
+		int where = find_network_newline (curr->buf, curr->inbuf); //find new line
+		if (where >= 0) {
+		curr->buf[where] = '\0'; curr->buf[where+1] = '\0';
+		//do_command (buf); //process buffer up to a new line
+		where+=2;
+		curr->inbuf -= where;
+		memmove (curr->buf, curr->buf + where, curr->inbuf);
+>>>>>>> bade8b304836f9f4f6e52e60ec6699b5051488c3
 		}
 	}
 	return nbytes;

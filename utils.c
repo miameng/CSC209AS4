@@ -16,7 +16,11 @@ void error(char *msg) {
 /*
  * Read and process commands
  */
+<<<<<<< HEAD
 int process_args(int cmd_argc, char **cmd_argv, QNode **root, Node *interests,
+=======
+int process_args(int cmd_argc, char* userinput, char **cmd_argv, QNode **root, Node *interests,
+>>>>>>> bade8b304836f9f4f6e52e60ec6699b5051488c3
 		 struct client *current_client, struct client *head) {
 	QNode *qtree = *root;
 	if (cmd_argc <= 0) {
@@ -38,6 +42,7 @@ int process_args(int cmd_argc, char **cmd_argv, QNode **root, Node *interests,
 			return -3;
 		//collect string to print
 
+<<<<<<< HEAD
 		write(current_client->fd, collect, strlen(collect));
 
 		//write the first question
@@ -48,6 +53,25 @@ int process_args(int cmd_argc, char **cmd_argv, QNode **root, Node *interests,
 
 		current_client->state++;
 		//return 1;
+=======
+				write(current_client->fd, collect, strlen(collect));
+
+		//write the first question
+
+		char * first_question; 
+		first_question = return_question(interests, current_client->state);
+
+
+		write(current_client->fd, first_question, strlen(first_question));
+
+		free(first_question);
+
+		//int curr_state = current_client->state;
+
+		//current_client->state = curr_state+1;
+
+		return 1;
+>>>>>>> bade8b304836f9f4f6e52e60ec6699b5051488c3
 
 
 	} else if (strcmp(cmd_argv[0], "get_all") == 0 && cmd_argc == 1) {
@@ -77,6 +101,7 @@ int process_args(int cmd_argc, char **cmd_argv, QNode **root, Node *interests,
 		 } else {
 		 	// client need to finish tests first
 		 	//return 5;
+<<<<<<< HEAD
 		 	Client *opp = head;
 		 	while((opp->next) && (opp->next->username != cmd_argv[1])){
 		 		opp = opp->next;
@@ -105,6 +130,48 @@ int process_args(int cmd_argc, char **cmd_argv, QNode **root, Node *interests,
 
         	current_client->state++;
         }
+=======
+		 	// for 
+		 	// write(current_client->fd, cmd_argv[2], )
+		}
+	} else if (validate_answer(userinput) != 2) {
+
+		//QNode *prev;
+		printf("aaaaaaaa\n");
+		int ans;
+        //prev = qtree;	//??
+        ans = validate_answer(userinput);
+
+        printf("%d\n", ans);
+        //current_client->answer[current_client->state] = ans;
+
+        //int curr_state = current_client->state;
+
+        //printf("%d\n", curr_state);
+
+        //current_client->state = curr_state+1;
+
+        //printf("%d\n", current_client->state);
+        //questions following the first question
+        //if(current_client->state == NUM_QUESTION){
+        
+        printf("aaaaaaaaa\n");
+        printf("bbbbbbbbb\n");
+        //printf("%d\n", current_client->state);
+        //write(current_client->fd, test_complete, strlen(test_complete));
+        	//current_client->state = current_client->state+1;
+        /*}
+        else{
+        	char* question;
+			question = return_question(interests, current_client->state);
+        	write(current_client->fd, question, strlen(question));
+        	free(question);
+        }	*/
+        //current_client->state = current_client->state+1;
+
+        return 1;
+        
+>>>>>>> bade8b304836f9f4f6e52e60ec6699b5051488c3
 	}
 	else {
 		/* The input message is not properly formatted. */
@@ -153,10 +220,20 @@ int validate_answer(char *answer){
         printf("%s", invalid_message);
         return 2;
     }
+<<<<<<< HEAD
     if (answer[0] == 'n' || answer[0] == 'N')
         return 0;       
     if (answer[0] == 'y' || answer[0] == 'Y')
         return 1;        
+=======
+ 
+    if (answer[0] == 'n' || answer[0] == 'N')
+        return 0;
+        
+    if (answer[0] == 'y' || answer[0] == 'Y')
+        return 1;
+        
+>>>>>>> bade8b304836f9f4f6e52e60ec6699b5051488c3
     printf("%s", invalid_message);
     return 2;
 }
