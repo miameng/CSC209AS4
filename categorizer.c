@@ -19,7 +19,8 @@ char *pos_result2 = "You have total %d potential friend(s)!!!\n\n";
 int main (int argc, char **argv) {
     
     char answer[MAX_LINE];    
-    char name[MAX_LINEuser_prompt
+    char name[MAX_LINE];
+    
     if (argc < 2) {
         printf ("To run the program ./categorizer <name of input file>\n");
         return 1;

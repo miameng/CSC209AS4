@@ -18,7 +18,7 @@ typedef struct client {
     int fd;
     int *answer;
     // before he enters the name, he cannot issue command
-    int state; 	// 0 new, 1 name, 2 waiting, 3-n questions  
+    int state; 	// -1 new, 0 name, 2-n questions  
     char username[MAX_NAME];
     // each client has its own buffer 
     char buf [BUFFER_SIZE];

@@ -16,7 +16,7 @@ void error(char *msg) {
  */
 int process_args(int cmd_argc, char **cmd_argv, QNode **root, Node *interests,
 		 struct client *current_client, struct client *head) {
-	//QNode *qtree = *root;
+	QNode *qtree = *root;
 	if (cmd_argc <= 0) {
 		return 0;
 
@@ -30,22 +30,40 @@ int process_args(int cmd_argc, char **cmd_argv, QNode **root, Node *interests,
 		 * need to make sure that the user answers each question only
 		 * once.
 		 */
+		if (current_client->state > 1 + NUM_QUESTION)
+			return -3;
 
 	} else if (strcmp(cmd_argv[0], "get_all") == 0 && cmd_argc == 1) {
 		/* Send the list of best mismatches related to the specified
 		 * user. If the user has not taked the test yet, return the
 		 * corresponding error value (different than 0 and -1).
 		 */
+		 if (current_client->state < 5) {
+		 	// client need to finish tests first
+		 }
 
 	} else if (strcmp(cmd_argv[0], "post") == 0 && cmd_argc == 3) {
 		/* Send the specified message stored in cmd_argv[2] to the user
 		 * stored in cmd_argv[1].
 		 */
+		 if (current_client->state != 5)
+		 	// client need to finish tests first
+		 	return 5;
+
+	} else if (validate_answer(cmd_argv[0]) != 2 && cmd_argc == 1) {
+		QNode *prev, *curr;
+		int ans;
+        prev = curr = root;
+        ans = validate_answer(cmd_argv[0]);
+ 
+        prev = curr;
+        curr = find_branch(curr, ans);
 
 	}
 	else {
 		/* The input message is not properly formatted. */
 		error("Incorrect syntax");
+		return -2;
 	}
 	return 0;
 }
