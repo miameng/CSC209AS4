@@ -145,35 +145,20 @@ int main(int argc, char **argv)
 						curr->state = 0;
 						write(curr->fd, greeting, strlen(greeting));
 					}
-				} else if (curr->state <= NUM_QUESTION){
-
-		//			printf("%d\n", cmd_argc);
-		//			printf("args: %s\n", cmd_argv);
-		//			printf("name: %s\n", curr->username);
-		//			printf("%d\n", curr->fd);
-		//			printf("%s\n", cmd_argv[0]);
-		//			printf("state: %d ---\n", curr->state);
-
-
+				//} else if (curr->state <= NUM_QUESTION){
+				} else if (curr->state >= 0){
 					// user is answering questions
 					//int len = read(curr->fd, userinput, sizeof userinput);
 					int len = read_from_client(userinput, curr);
 					userinput[len] = '\0';
-		//			printf("aaaa\n");
 					if (len < 0){
 				    	perror("read\n");
 				    } else if (len == 0) {
-		//		    	printf("nonono\n");
-				    	// innet_ntoa: turn an address into a string 
 						removeclient(curr->fd);
 				    } else{
-		//		    	printf("bbbb\n");
 						cmd_argc = tokenize(userinput, &cmd_argv);
-
-		//				printf("cccc\n");
-
 						cmdresult = process_args(cmd_argc, &cmd_argv, &root, interests, curr, head);
-						printf("%s\n", cmd_argv);
+
 						switch (cmdresult){
 							case -1:
 								write(curr->fd, goodbye, strlen(goodbye));
@@ -209,7 +194,6 @@ int main(int argc, char **argv)
 				write(head->fd, askname, strlen(askname));
 			}
 		}
-		
 	}
 	return(0);
 }
@@ -224,6 +208,7 @@ void addclient(int fd, struct in_addr add){
 	p->fd = fd;
 	p->ipaddr = add;
 	p->state = -1;
+	p->answer = (int*)malloc(sizeof(int)*NUM_QUESTION);
 	p->next = head;
 	head = p;
 
@@ -259,7 +244,7 @@ void removeclient(int fd){
 		fprintf(stderr, "Trying to remove fd %d, but I don't know about it\n", fd);
     }
 }
-
+	
 void newconnection(int serv_socket_fd){
 	struct sockaddr_in client_addr;
 	socklen_t socklen = sizeof client_addr;
@@ -285,7 +270,6 @@ void wrap_up(){
 // print list of potential friends for user
 void print_friends(Node *list, char *name){
     int friends = 0;
-
     // iterate over user list and count the number of friends
     while (list) {
 	// ignore this user
@@ -335,10 +319,8 @@ int read_from_client(char* userinput, Client *curr){
 		//do_command (buf); //process buffer up to a new line
 		where+=2;
 		curr->inbuf -= where;
-		memmove (curr->buf, curr->buf + where, curr->inbuf);
 		}
 	}
 	return nbytes;
 }
-
 

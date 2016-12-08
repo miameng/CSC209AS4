@@ -38,6 +38,9 @@ void error(char *);
  */
 int process_args(int, char**, QNode **, Node *, struct client *, struct client *);
 
+//int process_args(int cmd_argc, char* userinput, char **cmd_argv, QNode **root, Node *interests,
+//         struct client *current_client, struct client *head);
+
 
 /*
  * Tokenize the string stored in cmd.
@@ -46,5 +49,6 @@ int process_args(int, char**, QNode **, Node *, struct client *, struct client *
 int tokenize(char *, char **);
 
 int validate_answer(char *answer);
+void store_user(QNode*, char*, int*);
 
 #endif /* _UTILS_H */
