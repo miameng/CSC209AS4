@@ -21,6 +21,7 @@
 
 Client *head = NULL;
 char *askname = "What is your user name?\n";
+char *greeting = "Welcome\nGo ahead and enter user commands>\n";
 
 void addclient(int fd, struct in_addr add);
 void removeclient(int fd);
@@ -62,7 +63,7 @@ int main(int argc, char **argv)
 		perror("listen");
 		return(1);
 	} else {
-		printf("listening on port %d", PORT);
+		printf("listening on port %d\n", PORT);
 	}
 
 	// ------ add this part before the program exit 
@@ -108,34 +109,42 @@ int main(int argc, char **argv)
 				// case with existing connection
 				// already accepted 
 				if (curr->state == 0) {
+					// get user name
 					char username[MAX_NAME];
 					// return how many bytes have been read in
 					int len = read(curr->fd, username, sizeof username);
-				    if ((len > 0) && (len < 128)){
-				    	printf("sss\n");
-				    	// ###### if the user name is longer than 128 
-				    	//process_args
+					if (len < 0){
+				    	perror("read");
 				    } else if (len == 0) {
 				    	// innet_ntoa: turn an address into a string 
-						printf("Removing client %s\n", inet_ntoa(curr->ipaddr));
 						removeclient(curr->fd);
-				    } else {
-						perror("read");
-				    }
+				    } else{
+					    if (len > 128)
+					    	username[127] = '\0';
+					    strcpy(curr->username, username);
+						curr->state = 1;
+						write(curr->fd, greeting, strlen(greeting));
+					}
+				} else if (curr->state == 1){
+
 				}
-				//
+				else {
+					
+				}
 			}
 			// if the fd of the server is in the list, means that there are new
 			// clients 
-			if (FD_ISSET(serv_socket_fd, &fdlist))
+			if (FD_ISSET(serv_socket_fd, &fdlist)){
 				// case add new connection
 				newconnection(serv_socket_fd);
-				write(curr->fd, askname, strlen(askname));
+				write(head->fd, askname, strlen(askname));
+			}
 		}
 		
 	}
 	return(0);
 }
+
 
 void addclient(int fd, struct in_addr add){
 	Client *p = malloc(sizeof(Client));
@@ -146,10 +155,6 @@ void addclient(int fd, struct in_addr add){
 	p->fd = fd;
 	p->ipaddr = add;
 	p->state = 0;
-	p->inbuf = 0;
-	strcpy(p->buf, "");
-	strcpy(p->username, "");
-	p->answer = 0;
 	p->next = head;
 	head = p;
 
@@ -171,12 +176,12 @@ void removeclient(int fd){
 		}
 	}
 	printf("Removing client #######");*/
-    struct client **p;
+    Client **p;
     //------------- loop over the whole linked list, and set the pointer pointing to the node I wanna remove
     for (p = &head; *p && (*p)->fd != fd; p = &(*p)->next);
 	//------------- for ( p = *top p && p->fd != fd; p = p->next)
     if (*p) {
-		struct client *t = (*p)->next;
+		Client *t = (*p)->next;
 			printf("Removing client %s\n", inet_ntoa((*p)->ipaddr));
 			free(*p);
 		*p = t; //------------because we have to free the memory of the node *p originally pointing to 
