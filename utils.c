@@ -4,6 +4,7 @@
 
 #include "utils.h"
 char *collect = "Collecting your interests\n";
+char *do_test_first = "Please finish the test first. Type in 'do_test'!\n";
 char *test_complete = "Test Completed!\n";
 /*
  * Print a formatted error message to stderr.
@@ -56,6 +57,9 @@ int process_args(int cmd_argc, char **cmd_argv, QNode **root, Node *interests,
 		 */
 		 if (current_client->state < NUM_QUESTION + 1) {
 		 	// client need to finish tests first
+		 	//#######
+		 	write(current_client->fd,do_test_first, strlen(do_test_first));
+
 		 } else {
 		 	char * opp_friend_list;
 		 	opp_friend_list = get_opposite_friends(qtree, current_client->answer);
@@ -66,10 +70,16 @@ int process_args(int cmd_argc, char **cmd_argv, QNode **root, Node *interests,
 		/* Send the specified message stored in cmd_argv[2] to the user
 		 * stored in cmd_argv[1].
 		 */
-		 if (current_client->state != 5)
+		 if (current_client->state < NUM_QUESTION + 1) {
 		 	// client need to finish tests first
-		 	return 5;
-
+		 	//#######
+		 	write(current_client->fd,do_test_first, strlen(do_test_first));
+		 } else {
+		 	// client need to finish tests first
+		 	//return 5;
+		 	// for 
+		 	// write(current_client->fd, cmd_argv[2], )
+		}
 	} else if (validate_answer(cmd_argv[0]) != 2 && cmd_argc == 1) {
 
 		QNode *prev;

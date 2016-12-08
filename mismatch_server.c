@@ -132,7 +132,8 @@ int main(int argc, char **argv)
 					// get user name
 					char username[MAX_NAME];
 					// return how many bytes have been read in
-					int len = read(curr->fd, username, sizeof username);
+					// int len = read(curr->fd, username, sizeof username);
+					int len = read_from_client(username, curr);
 					if (len < 0){
 				    	perror("read");
 				    } else if (len == 0) {
@@ -300,7 +301,7 @@ int find_network_newline (char *buf, int inbuf) {
 }
 
 int read_from_client(char* userinput, Client curr){
-	userinput = curr.buf + curr.inbuf;
+	//userinput = curr.buf + curr.inbuf;
 	int room = BUFFER_SIZE - curr.inbuf;
 	int nbytes;
 	//read next message into remaining room in buffer
@@ -308,7 +309,7 @@ int read_from_client(char* userinput, Client curr){
 		curr.inbuf += nbytes;
 		int where = find_network_newline (curr.buf, curr.inbuf); //find new line
 		if (where >= 0) {
-		curr.buf[where] = '\0'; buf[where+1] = '\0';
+		curr.buf[where] = '\0'; curr.buf[where+1] = '\0';
 		//do_command (buf); //process buffer up to a new line
 		where+=2;
 		curr.inbuf -= where;
