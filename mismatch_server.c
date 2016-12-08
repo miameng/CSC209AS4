@@ -165,8 +165,7 @@ int main(int argc, char **argv)
 							case 1:
 								write(curr->fd, collect, strlen(collect));
 							default:
-								write(curr->fd, emptymsg, strlen(emptymsg));
-								
+								write(curr->fd, emptymsg, strlen(emptymsg));								
 						}
 					}
 				} else {
@@ -242,6 +241,15 @@ void newconnection(int serv_socket_fd){
 	}
 	printf("connection from %s\n", inet_ntoa(client_addr.sin_addr));
 	addclient(client_fd, client_addr.sin_addr);
+}
+
+int find_network_newline (char *buf, int inbuf) {
+	int i;
+	for (i = 0; i < inbuf - 1; i++)
+		if ((buf[i] == '\r') && (buf[i + 1] == '\n'))
+			return i;
+	return -1;
+
 }
 
 
