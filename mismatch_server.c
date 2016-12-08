@@ -155,7 +155,6 @@ int main(int argc, char **argv)
 						removeclient(curr->fd);
 				    } else{
 						cmd_argc = tokenize(userinput, &cmd_argv);
-
 			//			printf("%d\n", cmd_argc);
 						printf("%s\n", userinput);
 			//			printf("%s\n", curr->username);
@@ -163,7 +162,7 @@ int main(int argc, char **argv)
 			//			printf("%s\n", cmd_argv[0]);
 			//			printf("%d ---\n", curr->state);
 
-						cmdresult = process_args(cmd_argc, &cmd_argv, &root, interests, curr, head);
+						cmdresult = process_args(cmd_argc, userinput, &cmd_argv, &root, interests, curr, head);
 						switch (cmdresult){
 							case -1:
 								write(curr->fd, goodbye, strlen(goodbye));

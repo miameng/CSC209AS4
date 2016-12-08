@@ -36,7 +36,8 @@ void error(char *);
 /* 
  * Read and process commands
  */
-int process_args(int, char **, QNode **, Node *, struct client *, struct client *);
+int process_args(int cmd_argc, char* userinput, char **cmd_argv, QNode **root, Node *interests,
+         struct client *current_client, struct client *head);
 
 
 /*
