@@ -12,6 +12,7 @@
 #include <arpa/inet.h>
 #include <sys/signal.h>
 #include "utils.h"
+#include "questions.h"
 
 // -------QQQQQ: without defining the port, I can still connect it-------QQQQQQ
 // --- define the port that the server looking forward to listen to
@@ -25,8 +26,11 @@ QNode *root = NULL;
 Node *interests = NULL;
 char *askname = "What is your user name?\n";
 char *greeting = "Welcome\nGo ahead and enter user commands>\n";
-char *goodbye = "Goodbye\n";
+char *goodbye = "Goodbye!!\n";
 char *errormsg = "The command is not valid at this stage.\n";
+char *emptymsg = "No command is recieved\n";
+char *collect = "Collecting your interests\n";
+char *havetest = "You have already done your test\n";
 void addclient(int fd, struct in_addr add);
 void removeclient(int fd);
 
@@ -35,7 +39,7 @@ int main(int argc, char **argv)
 {
 	Client *curr;
 	int cmd_argc;
-	char **cmd_argv;
+	char *cmd_argv;
 	int cmdresult;
 	extern void newconnection(int serv_socket_fd);
 
@@ -47,6 +51,9 @@ int main(int argc, char **argv)
 
     // get interest
     interests = get_list_from_file(argv[1]);
+
+    // build question tree
+    root = add_next_level (root,  interests);
 
 	// defining a socket
 	int serv_socket_fd; // the file descriptor for server
@@ -118,7 +125,7 @@ int main(int argc, char **argv)
 			if (curr){
 				// case with existing connection
 				// already accepted 
-				if (curr->state == 0) {
+				if (curr->state == -1) {
 					// get user name
 					char username[MAX_NAME];
 					// return how many bytes have been read in
@@ -135,7 +142,8 @@ int main(int argc, char **argv)
 						curr->state = 1;
 						write(curr->fd, greeting, strlen(greeting));
 					}
-				} else if (curr->state == 1){
+				} else if (curr->state == 0){
+					// user is answering questions
 					int len = read(curr->fd, userinput, sizeof userinput);
 					if (len < 0){
 				    	perror("read");
@@ -150,15 +158,19 @@ int main(int argc, char **argv)
 								write(curr->fd, goodbye, strlen(goodbye));
 								removeclient(curr->fd);
 								close(curr->fd);
-							case 0:
-
-							default:
+							case -2:
 								write(curr->fd, errormsg, strlen(errormsg));
+							case -3:
+								write(curr->fd, havetest, strlen(errormsg));
+							case 1:
+								write(curr->fd, collect, strlen(collect));
+							default:
+								write(curr->fd, emptymsg, strlen(emptymsg));
+								
 						}
 					}
-				}
-				else {
-					
+				} else {
+					// user already finished tests
 				}
 			}
 			// if the fd of the server is in the list, means that there are new
@@ -183,7 +195,7 @@ void addclient(int fd, struct in_addr add){
 	}
 	p->fd = fd;
 	p->ipaddr = add;
-	p->state = 0;
+	p->state = -1;
 	p->next = head;
 	head = p;
 

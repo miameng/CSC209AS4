@@ -12,6 +12,7 @@ typedef struct str_node {
 	struct str_node *next;
 } Node;
 
+int NUM_QUESTION;
 Node * get_list_from_file (char *input_file_name);
 void print_list (Node *current);
 void free_list (Node *head);

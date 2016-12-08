@@ -14,6 +14,14 @@ char *pos_result2 = "You have total %d potential friend(s)!!!\n\n";
 
 char* return_question(Node *root, int question_number){
     
+<<<<<<< HEAD
+    char answer[MAX_LINE];    
+    char name[MAX_LINE];
+    
+    if (argc < 2) {
+        printf ("To run the program ./categorizer <name of input file>\n");
+        return 1;
+=======
     char *interests;
     char *prompt_1 = "Do you like ";
     char *prompt_2 = "? (y/n)\n";
@@ -24,6 +32,7 @@ char* return_question(Node *root, int question_number){
     while(question_number != 0){
         current = current->next;
         question_number--;
+>>>>>>> 9bd00c9d64c506d52f687f114b0b68368e3613d8
     }
 
     interests = current->str;
