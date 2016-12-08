@@ -170,8 +170,12 @@ int main(int argc, char **argv)
 							case 1:
 								write(curr->fd, collect, strlen(collect));
 							default:
+<<<<<<< HEAD
 								printf("a");
 								
+=======
+								write(curr->fd, emptymsg, strlen(emptymsg));								
+>>>>>>> b9f3d3930b585e8ba998cd8fa1697e8f34841645
 						}
 					}
 				} else {
@@ -250,6 +254,7 @@ void newconnection(int serv_socket_fd){
 	addclient(client_fd, client_addr.sin_addr);
 }
 
+<<<<<<< HEAD
 void wrap_up(){
     //end of main loop - the user typed "q"
     print_qtree (root, 0);
@@ -289,6 +294,15 @@ void print_friends(Node *list, char *name){
     } else {
         printf("%s", neg_result);    
     }
+=======
+int find_network_newline (char *buf, int inbuf) {
+	int i;
+	for (i = 0; i < inbuf - 1; i++)
+		if ((buf[i] == '\r') && (buf[i + 1] == '\n'))
+			return i;
+	return -1;
+
+>>>>>>> b9f3d3930b585e8ba998cd8fa1697e8f34841645
 }
 
 
