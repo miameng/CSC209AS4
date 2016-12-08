@@ -179,7 +179,7 @@ char* get_opposite_friends(QNode *root, int* answer){
 
 //print the list of opposite friends for user
 char* get_opposite_friends_helper(Node *list){
-<<<<<<< HEAD
+
 
     char *get_opposite;
     char * prompt_1 = "No completing personalities found. Please try again later\n";
@@ -188,17 +188,10 @@ char* get_opposite_friends_helper(Node *list){
     Node* current = list;
     int len = 0;
 
-=======
-    char *get_opposite = "";
-    char * prompt_1 = "No completing personalities found. Please try again later\n";
-    char * prompt_2 = "Here are your mismatches:\n";
-
->>>>>>> master
     if(list == NULL){
         return prompt_1;
     }
     else{
-<<<<<<< HEAD
 
         //get the memory size of the string need to be allocated.
         while(current){
@@ -235,19 +228,3 @@ char* get_opposite_friends_helper(Node *list){
     }
 }
 
-
-
-
-=======
-        // printf("Here are your best mismatches:\n");
-        while(list){
-            strcat(get_opposite, list->str);
-            strcat(get_opposite, "\n");
-            list = list->next;
-        }
-        strcat(prompt_2, get_opposite);
-        return prompt_2;
-    }
-}
-
->>>>>>> master
