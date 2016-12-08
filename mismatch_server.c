@@ -26,6 +26,7 @@ Node *interests = NULL;
 char *askname = "What is your user name?\n";
 char *greeting = "Welcome\nGo ahead and enter user commands>\n";
 char *goodbye = "Goodbye\n";
+char *errormsg = "The command is not valid at this stage.\n";
 void addclient(int fd, struct in_addr add);
 void removeclient(int fd);
 
@@ -43,6 +44,9 @@ int main(int argc, char **argv)
         printf ("Usage: mismatch_server text_file\n");
         return 1;
     }
+
+    // get interest
+    interests = get_list_from_file(argv[1]);
 
 	// defining a socket
 	int serv_socket_fd; // the file descriptor for server
@@ -147,7 +151,9 @@ int main(int argc, char **argv)
 								removeclient(curr->fd);
 								close(curr->fd);
 							case 0:
-								
+
+							default:
+								write(curr->fd, errormsg, strlen(errormsg));
 						}
 					}
 				}
@@ -225,9 +231,3 @@ void newconnection(int serv_socket_fd){
 	printf("connection from %s\n", inet_ntoa(client_addr.sin_addr));
 	addclient(client_fd, client_addr.sin_addr);
 }
-/*
-void getname(struct ){
-	printf("What is your username?");
-	scanf("%s", client_addr.username);
-}
-*/
