@@ -14,6 +14,7 @@ typedef struct str_node {
 
 int NUM_QUESTION;
 Node * get_list_from_file (char *input_file_name);
+char* return_question(Node *root, int question_number);
 void print_list (Node *current);
 void free_list (Node *head);
 

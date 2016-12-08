@@ -45,4 +45,6 @@ int process_args(int, char **, QNode **, Node *, struct client *, struct client 
  */
 int tokenize(char *, char **);
 
+int validate_answer(char *answer);
+
 #endif /* _UTILS_H */

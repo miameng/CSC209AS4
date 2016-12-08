@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "utils.h"
-
+char *collect = "Collecting your interests\n";
 /*
  * Print a formatted error message to stderr.
  */
@@ -18,7 +18,7 @@ int process_args(int cmd_argc, char **cmd_argv, QNode **root, Node *interests,
 		 struct client *current_client, struct client *head) {
 	QNode *qtree = *root;
 	if (cmd_argc <= 0) {
-		return 0;
+		return -4;
 
 	} else if (strcmp(cmd_argv[0], "quit") == 0 && cmd_argc == 1) {
 		/* Return an appropriate value to denote that the specified
@@ -32,6 +32,10 @@ int process_args(int cmd_argc, char **cmd_argv, QNode **root, Node *interests,
 		 */
 		if (current_client->state > 1 + NUM_QUESTION)
 			return -3;
+		write(current_client->fd, collect, strlen(collect));
+		// get next question
+		current_client->state = 1;
+		return 1;
 
 	} else if (strcmp(cmd_argv[0], "get_all") == 0 && cmd_argc == 1) {
 		/* Send the list of best mismatches related to the specified
@@ -51,13 +55,16 @@ int process_args(int cmd_argc, char **cmd_argv, QNode **root, Node *interests,
 		 	return 5;
 
 	} else if (validate_answer(cmd_argv[0]) != 2 && cmd_argc == 1) {
-		QNode *prev, *curr;
+
+		QNode *prev;
 		int ans;
-        prev = curr = root;
+        prev = qtree;
         ans = validate_answer(cmd_argv[0]);
+
+        //return_question(root, current_client->state);
  
-        prev = curr;
-        curr = find_branch(curr, ans);
+        prev = qtree;
+        qtree = find_branch(qtree, ans);
 
 	}
 	else {
@@ -98,3 +105,23 @@ int tokenize(char *cmd, char **cmd_argv) {
 
     return cmd_argc;
 }
+
+
+int validate_answer(char *answer){
+    char *invalid_message = "ERROR: Answer must be one of 'y', 'n', 'q'.\n";
+    
+    if (strlen(answer) > 3){
+        printf("%s", invalid_message);
+        return 2;
+    }
+ 
+    if (answer[0] == 'n' || answer[0] == 'N')
+        return 0;
+        
+    if (answer[0] == 'y' || answer[0] == 'Y')
+        return 1;
+        
+    printf("%s", invalid_message);
+    return 2;
+}
+
