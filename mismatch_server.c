@@ -130,7 +130,7 @@ int main(int argc, char **argv)
 					// get user name
 					char username[MAX_NAME];
 					// return how many bytes have been read in
-					// int len = read(curr->fd, username, sizeof username);
+					//int len = read(curr->fd, username, sizeof username - 1);
 					int len = read_from_client(username, curr);
 					if (len < 0){
 				    	perror("read");
@@ -140,30 +140,40 @@ int main(int argc, char **argv)
 				    } else{
 					    if (len > 128)
 					    	username[127] = '\0';
+					    username[len] = '\0';
 					    strcpy(curr->username, username);
 						curr->state = 0;
 						write(curr->fd, greeting, strlen(greeting));
 					}
 				} else if (curr->state <= NUM_QUESTION){
+
+		//			printf("%d\n", cmd_argc);
+		//			printf("args: %s\n", cmd_argv);
+		//			printf("name: %s\n", curr->username);
+		//			printf("%d\n", curr->fd);
+		//			printf("%s\n", cmd_argv[0]);
+		//			printf("state: %d ---\n", curr->state);
+
+
 					// user is answering questions
 					//int len = read(curr->fd, userinput, sizeof userinput);
 					int len = read_from_client(userinput, curr);
+					userinput[len] = '\0';
+		//			printf("aaaa\n");
 					if (len < 0){
-				    	perror("read");
+				    	perror("read\n");
 				    } else if (len == 0) {
+		//		    	printf("nonono\n");
 				    	// innet_ntoa: turn an address into a string 
 						removeclient(curr->fd);
 				    } else{
+		//		    	printf("bbbb\n");
 						cmd_argc = tokenize(userinput, &cmd_argv);
 
-			//			printf("%d\n", cmd_argc);
-						printf("%s\n", userinput);
-			//			printf("%s\n", curr->username);
-			//			printf("%d\n", curr->fd);
-			//			printf("%s\n", cmd_argv[0]);
-			//			printf("%d ---\n", curr->state);
+		//				printf("cccc\n");
 
 						cmdresult = process_args(cmd_argc, &cmd_argv, &root, interests, curr, head);
+						printf("%s\n", cmd_argv);
 						switch (cmdresult){
 							case -1:
 								write(curr->fd, goodbye, strlen(goodbye));
@@ -312,20 +322,20 @@ int find_network_newline (char *buf, int inbuf) {
 	return -1;
 }
 
-int read_from_client(char* userinput, Client curr){
+int read_from_client(char* userinput, Client *curr){
 	//userinput = curr.buf + curr.inbuf;
-	int room = BUFFER_SIZE - curr.inbuf;
+	int room = BUFFER_SIZE - curr->inbuf;
 	int nbytes;
 	//read next message into remaining room in buffer
-	if ((nbytes = read(curr.fd, userinput, room)) > 0) {
-		curr.inbuf += nbytes;
-		int where = find_network_newline (curr.buf, curr.inbuf); //find new line
+	if ((nbytes = read(curr->fd, userinput, room)) > 0) {
+		curr->inbuf += nbytes;
+		int where = find_network_newline (curr->buf, curr->inbuf); //find new line
 		if (where >= 0) {
-		curr.buf[where] = '\0'; curr.buf[where+1] = '\0';
+		curr->buf[where] = '\0'; curr->buf[where+1] = '\0';
 		//do_command (buf); //process buffer up to a new line
 		where+=2;
-		curr.inbuf -= where;
-		memmove (curr.buf, curr.buf + where, curr.inbuf);
+		curr->inbuf -= where;
+		memmove (curr->buf, curr->buf + where, curr->inbuf);
 		}
 	}
 	return nbytes;

@@ -6,6 +6,8 @@
 char *collect = "Collecting your interests\n";
 char *do_test_first = "Please finish the test first. Type in 'do_test'!\n";
 char *test_complete = "Test Completed!\n";
+char *syntaxerror = "Incorrect syntax";
+char *testmsg = "Iamhere\n";
 /*
  * Print a formatted error message to stderr.
  */
@@ -17,7 +19,7 @@ void error(char *msg) {
  * Read and process commands
  */
 
-int process_args(int cmd_argc, char* userinput, char **cmd_argv, QNode **root, Node *interests,
+int process_args(int cmd_argc, char **cmd_argv, QNode **root, Node *interests,
 		 struct client *current_client, struct client *head) {
 	QNode *qtree = *root;
 	if (cmd_argc <= 0) {
@@ -33,16 +35,15 @@ int process_args(int cmd_argc, char* userinput, char **cmd_argv, QNode **root, N
 		 * need to make sure that the user answers each question only
 		 * once.
 		 */
-
+		 
 		//if the test was done already
 		if (current_client->state > 1 + NUM_QUESTION)
 			return -3;
 		//collect string to print
 
-				write(current_client->fd, collect, strlen(collect));
-
+		write(current_client->fd, collect, strlen(collect));
 		//write the first question
-
+		
 		char * first_question; 
 		first_question = return_question(interests, current_client->state);
 
@@ -50,11 +51,11 @@ int process_args(int cmd_argc, char* userinput, char **cmd_argv, QNode **root, N
 		write(current_client->fd, first_question, strlen(first_question));
 
 		free(first_question);
-
+		
 		//int curr_state = current_client->state;
 
 		//current_client->state = curr_state+1;
-
+	
 		return 1;
 
 
@@ -91,8 +92,9 @@ int process_args(int cmd_argc, char* userinput, char **cmd_argv, QNode **root, N
 		 	}
 		 	write(opp->fd, cmd_argv[2], strlen(cmd_argv[2]));
 		}
-	} else if (validate_answer(cmd_argv[0]) != 2 && cmd_argc == 1) {
-
+	} else if (cmd_argc == 1) {
+		
+      	write(current_client->fd, testmsg, strlen(testmsg));
 		QNode *prev;
 		int ans;
         prev = qtree;	//??
@@ -116,7 +118,8 @@ int process_args(int cmd_argc, char* userinput, char **cmd_argv, QNode **root, N
 	}
 	else {
 		/* The input message is not properly formatted. */
-		error("Incorrect syntax");
+		//error("Incorrect syntax");
+		write(current_client->fd, syntaxerror, strlen(syntaxerror));
 		return -2;
 	}
 	return 0;
