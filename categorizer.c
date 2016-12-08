@@ -6,7 +6,6 @@ int validate_user(char *name);
 int validate_answer(char *answer);
 void wrap_up();
 void print_friends(Node *list, char *name);
-void print_opposite_friends(Node *list);
 
 QNode *root = NULL;    
 Node *interests = NULL;
@@ -20,8 +19,7 @@ char *pos_result2 = "You have total %d potential friend(s)!!!\n\n";
 int main (int argc, char **argv) {
     
     char answer[MAX_LINE];    
-    char name[MAX_LINE];
-
+    char name[MAX_LINEuser_prompt
     if (argc < 2) {
         printf ("To run the program ./categorizer <name of input file>\n");
         return 1;
@@ -53,15 +51,13 @@ int main (int argc, char **argv) {
             continue;
         
         // check whether the user with this name already exists
-        Node *user_list, *opp_user_list; 
-        opp_user_list = NULL;
-        user_list = find_user(root, name);
+        Node *user_list = find_user(root, name);
         
         if (!user_list){
             // find the list of friends to which the user should be attached
-            QNode *prev, *curr, *opp_prev, *opp_curr;
-            opp_prev = opp_curr = prev = curr = root;
-	    	
+            QNode *prev, *curr;
+            prev = curr = root;
+        
             // iterate over list of interests
             Node *i = interests;
             int ans;
@@ -75,27 +71,20 @@ int main (int argc, char **argv) {
                 // if answer if not valid, continue to loop
                 if (ans == 2)
                     continue;
-
-                opp_prev = opp_curr;
-		        opp_curr = find_branch(opp_curr, 1-ans);
-        
+                    
                 prev = curr;
                 curr = find_branch(curr, ans);
 
                 i = i->next;
             }
-		
-	        opp_user_list = opp_prev->children[1-ans].fchild;
-	            
+            
             // add user to the end of the list
             user_list = prev->children[ans].fchild;
             prev->children[ans].fchild = add_user(user_list, name);
         }
         
         // print list of potential friends
-   	//print_friends(user_list, name);  
-    print_opposite_friends(opp_user_list);
-	//   print_opposite_friends(opp_user_list);
+        print_friends(user_list, name);  
     }
     
     return 0;
@@ -160,24 +149,6 @@ int validate_answer(char *answer){
     printf("%s", invalid_message);
     return 2;
 }
-
-//print the list of opposite friends for user
-void print_opposite_friends(Node *list){
-
-
-    if(list == NULL){
-        printf("No completing personalities found. Please try again later\n");   
-    }
-    else{
-        printf("Here are your best mismatches:\n");
-        while(list){
-            printf("%s, ", list->str);
-	        list = list->next;
-        }
-        printf("\n");
-    }
-}
-
 
 // print list of potential friends for user
 void print_friends(Node *list, char *name){
