@@ -162,6 +162,7 @@ int main(int argc, char **argv)
 			//			printf("%s\n", cmd_argv[0]);
 			//			printf("%d ---\n", curr->state);
 
+
 						cmdresult = process_args(cmd_argc, userinput, &cmd_argv, &root, interests, curr, head);
 						switch (cmdresult){
 							case -1:
@@ -247,8 +248,7 @@ void removeclient(int fd){
     } else {
 		fprintf(stderr, "Trying to remove fd %d, but I don't know about it\n", fd);
     }
-}
-
+	
 void newconnection(int serv_socket_fd){
 	struct sockaddr_in client_addr;
 	socklen_t socklen = sizeof client_addr;
@@ -274,7 +274,6 @@ void wrap_up(){
 // print list of potential friends for user
 void print_friends(Node *list, char *name){
     int friends = 0;
-
     // iterate over user list and count the number of friends
     while (list) {
 	// ignore this user
@@ -303,31 +302,27 @@ void print_friends(Node *list, char *name){
 }
 
 
+int read_from_client(char* userinput, Client *curr){
+	//userinput = curr.buf + curr.inbuf;
+	int room = BUFFER_SIZE - curr->inbuf;
+	int nbytes;
+	//read next message into remaining room in buffer
+	if ((nbytes = read(curr->fd, userinput, room)) > 0) {
+		curr->inbuf += nbytes;
+		int where = find_network_newline (curr->buf, curr->inbuf); //find new line
+		if (where >= 0) {
+		curr->buf[where] = '\0'; curr->buf[where+1] = '\0';
+		//do_command (buf); //process buffer up to a new line
+		where+=2;
+		curr->inbuf -= where;
+		memmove (curr->buf, curr->buf + where, curr->inbuf);
+
 int find_network_newline (char *buf, int inbuf) {
 	int i;
 	for (i = 0; i < inbuf - 1; i++)
 		if ((buf[i] == '\r') && (buf[i + 1] == '\n'))
 			return (i);
 	return -1;
-}
-
-int read_from_client(char* userinput, Client curr){
-	//userinput = curr.buf + curr.inbuf;
-	int room = BUFFER_SIZE - curr.inbuf;
-	int nbytes;
-	//read next message into remaining room in buffer
-	if ((nbytes = read(curr.fd, userinput, room)) > 0) {
-		curr.inbuf += nbytes;
-		int where = find_network_newline (curr.buf, curr.inbuf); //find new line
-		if (where >= 0) {
-		curr.buf[where] = '\0'; curr.buf[where+1] = '\0';
-		//do_command (buf); //process buffer up to a new line
-		where+=2;
-		curr.inbuf -= where;
-		memmove (curr.buf, curr.buf + where, curr.inbuf);
-		}
-	}
-	return nbytes;
 }
 
 

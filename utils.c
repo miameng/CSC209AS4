@@ -16,7 +16,6 @@ void error(char *msg) {
 /*
  * Read and process commands
  */
-
 int process_args(int cmd_argc, char* userinput, char **cmd_argv, QNode **root, Node *interests,
 		 struct client *current_client, struct client *head) {
 	QNode *qtree = *root;
@@ -93,26 +92,28 @@ int process_args(int cmd_argc, char* userinput, char **cmd_argv, QNode **root, N
 		}
 	} else if (validate_answer(cmd_argv[0]) != 2 && cmd_argc == 1) {
 
-		QNode *prev;
+		//QNode *prev;
+		//printf("aaaaa\n");
 		int ans;
-        prev = qtree;	//??
-        ans = validate_answer(cmd_argv[0]);
-        current_client->answer[current_client->state-1] = ans;
+		//prev = qtree;	//??
+		ans = validate_answer(cmd_argv[0]);
+		current_client->answer[current_client->state] = ans;
+		int curr_state = current_client->state;
+		current_client->state = curr_state +1;
 
         //questions following the first question
-        if(current_client->state == NUM_QUESTION){
-        	write(current_client->fd, test_complete, strlen(test_complete));
-        	current_client->state++;
-        }
-        else{
-        	char* question;
-        	question = return_question(interests, current_client->state);
-
-        	//ask client the question
-        	write(current_client->fd, question, strlen(question));
-
-        	current_client->state++;
-        }
+        	if(current_client->state == NUM_QUESTION){
+        		write(current_client->fd, test_complete, strlen(test_complete));
+        		current_client->state++;
+        	}
+        	else{
+			char* question;
+			question = return_question(interests, current_client->state);
+			//ask client the question
+			write(current_client->fd, question, strlen(question));
+			free(question);
+			current_client->state++;
+        	}
 	}
 	else {
 		/* The input message is not properly formatted. */
