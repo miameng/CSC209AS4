@@ -155,3 +155,46 @@ void free_qtree(QNode *current){
         free(current);
     }
 }
+
+//get the mismatch of the current client
+//call the print_opposite_friends
+char* get_opposite_friends(QNode *root, int* answer){
+    Node* opp_user_list;
+    QNode* current = root;
+    int num = 0;
+    int answer_number = NUM_QUESTION;
+    while(answer_number != 0){
+        current = find_branch(current, (1- answer[num]));
+        num++;
+        answer_number--;
+    }
+
+    opp_user_list = current->children[1-answer[num]].fchild;
+
+    return get_opposite_friends_helper(opp_user_list);
+
+}
+
+
+
+//print the list of opposite friends for user
+char* get_opposite_friends_helper(Node *list){
+    char *get_opposite = "";
+    char * prompt_1 = "No completing personalities found. Please try again later\n";
+    char * prompt_2 = "Here are your mismatches:\n";
+
+    if(list == NULL){
+        return prompt_1;
+    }
+    else{
+        // printf("Here are your best mismatches:\n");
+        while(list){
+            strcat(get_opposite, list->str);
+            strcat(get_opposite, "\n");
+            list = list->next;
+        }
+        strcat(prompt_2, get_opposite);
+        return prompt_2;
+    }
+}
+

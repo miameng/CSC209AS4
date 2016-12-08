@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include "questions.h"
 
+char *prompt_1 = "Do you like ";
+char *prompt_2 = "? (y/n)\n";
+
 //global variable for total number of question
 int NUM_QUESTION = 0;
 
@@ -71,25 +74,32 @@ void print_list (Node *head) {
 }
 
 char* return_question(Node *root, int question_number){
-    
+
     char *interests;
-    char *prompt_1 = "Do you like ";
-    char *prompt_2 = "? (y/n)\n";
+
 
     Node *current;
     current = root;
 
-    while(question_number != 0){
+    while(question_number > 1){
         current = current->next;
         question_number--;
     }
 
     interests = current->str;
 
-    strcat(prompt_1, interests);
-    strcat(prompt_1, prompt_2);
-    return prompt_1;
+    char *question = malloc(sizeof(char)*(strlen(prompt_1) + strlen(prompt_2) + 
+                        strlen(interests) + 1));
+
+
+    strcpy(question, prompt_1);
+    strcat(question, interests);
+    strcat(question, prompt_2);
+    question[strlen(question)] = '\0';
+
+    return question;
 }
+
 
 void free_list (Node *head) {
     Node *next;

@@ -46,7 +46,7 @@ int process_args(int cmd_argc, char **cmd_argv, QNode **root, Node *interests,
 		write(current_client->fd, first_question, strlen(first_question));
 
 		current_client->state++;
-		return 1;
+		//return 1;
 
 
 	} else if (strcmp(cmd_argv[0], "get_all") == 0 && cmd_argc == 1) {
@@ -54,8 +54,12 @@ int process_args(int cmd_argc, char **cmd_argv, QNode **root, Node *interests,
 		 * user. If the user has not taked the test yet, return the
 		 * corresponding error value (different than 0 and -1).
 		 */
-		 if (current_client->state < 5) {
+		 if (current_client->state < NUM_QUESTION + 1) {
 		 	// client need to finish tests first
+		 } else {
+		 	char * opp_friend_list;
+		 	opp_friend_list = get_opposite_friends(qtree, current_client->answer);
+		 	write(current_client->fd, opp_friend_list, strlen(opp_friend_list));
 		 }
 
 	} else if (strcmp(cmd_argv[0], "post") == 0 && cmd_argc == 3) {

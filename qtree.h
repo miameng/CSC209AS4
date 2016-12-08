@@ -26,5 +26,7 @@ Node *add_user(Node *head, char *user);
 QNode *find_branch(QNode *current, int answer);
 Node *find_user(QNode *current, char *name);
 void free_qtree(QNode *root);
+char* get_opposite_friends(QNode *root, int* answer);
+char* get_opposite_friends_helper(Node *list);
 
 #endif

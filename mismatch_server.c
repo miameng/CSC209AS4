@@ -147,7 +147,8 @@ int main(int argc, char **argv)
 					}
 				} else if (curr->state <= NUM_QUESTION){
 					// user is answering questions
-					int len = read(curr->fd, userinput, sizeof userinput);
+					//int len = read(curr->fd, userinput, sizeof userinput);
+					int len = read_from_client(userinput, curr);
 					if (len < 0){
 				    	perror("read");
 				    } else if (len == 0) {
@@ -288,6 +289,33 @@ void print_friends(Node *list, char *name){
     } else {
         printf("%s", neg_result);    
     }
+}
+
+int find_network_newline (char *buf, int inbuf) {
+	int i;
+	for (i = 0; i < inbuf - 1; i++)
+		if ((buf[i] == '\r') && (buf[i + 1] == '\n'))
+			return i;
+	return -1;
+}
+
+int read_from_client(char* userinput, Client curr){
+	userinput = curr.buf + curr.inbuf;
+	int room = BUFFER_SIZE - curr.inbuf;
+	int nbytes;
+	//read next message into remaining room in buffer
+	if ((nbytes = read(curr.fd, userinput, room)) > 0) {
+		curr.inbuf += nbytes;
+		int where = find_network_newline (curr.buf, curr.inbuf); //find new line
+		if (where >= 0) {
+		curr.buf[where] = '\0'; buf[where+1] = '\0';
+		//do_command (buf); //process buffer up to a new line
+		where+=2;
+		curr.inbuf -= where;
+		memmove (curr.buf, curr.buf + where, curr.inbuf);
+		}
+	}
+	return nbytes;
 }
 
 
