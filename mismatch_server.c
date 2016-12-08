@@ -17,7 +17,7 @@
 // -------QQQQQ: without defining the port, I can still connect it-------QQQQQQ
 // --- define the port that the server looking forward to listen to
 #ifndef PORT
-  #define PORT 56288
+  #define PORT 56289
 #endif
 
 Client *head = NULL;
@@ -132,8 +132,8 @@ int main(int argc, char **argv)
 					// get user name
 					char username[MAX_NAME];
 					// return how many bytes have been read in
-					// int len = read(curr->fd, username, sizeof username);
-					int len = read_from_client(username, curr);
+					 int len = read(curr->fd, username, sizeof username);
+					//int len = read_from_client(username, curr);
 					if (len < 0){
 				    	perror("read");
 				    } else if (len == 0) {
@@ -157,6 +157,7 @@ int main(int argc, char **argv)
 						removeclient(curr->fd);
 				    } else{
 						cmd_argc = tokenize(userinput, &cmd_argv);
+						printf("%s\n", cmd_argc);
 						cmdresult = process_args(cmd_argc, &cmd_argv, &root, interests, curr, head);
 						switch (cmdresult){
 							case -1:
@@ -172,7 +173,7 @@ int main(int argc, char **argv)
 							//case 1:
 								//write(curr->fd, collect, strlen(collect));
 							default:
-								printf("a");
+								printf("a\n");
 						}
 					}
 				} else {
@@ -296,7 +297,7 @@ int find_network_newline (char *buf, int inbuf) {
 	int i;
 	for (i = 0; i < inbuf - 1; i++)
 		if ((buf[i] == '\r') && (buf[i + 1] == '\n'))
-			return i;
+			return (i+1);
 	return -1;
 }
 

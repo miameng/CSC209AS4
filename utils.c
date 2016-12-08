@@ -77,8 +77,11 @@ int process_args(int cmd_argc, char **cmd_argv, QNode **root, Node *interests,
 		 } else {
 		 	// client need to finish tests first
 		 	//return 5;
-		 	// for 
-		 	// write(current_client->fd, cmd_argv[2], )
+		 	Client *opp = head;
+		 	while((opp->next) && (opp->next->username != cmd_argv[1])){
+		 		opp = opp->next;
+		 	}
+		 	write(opp->fd, cmd_argv[2], strlen(cmd_argv[2]));
 		}
 	} else if (validate_answer(cmd_argv[0]) != 2 && cmd_argc == 1) {
 
@@ -150,13 +153,10 @@ int validate_answer(char *answer){
         printf("%s", invalid_message);
         return 2;
     }
- 
     if (answer[0] == 'n' || answer[0] == 'N')
-        return 0;
-        
+        return 0;       
     if (answer[0] == 'y' || answer[0] == 'Y')
-        return 1;
-        
+        return 1;        
     printf("%s", invalid_message);
     return 2;
 }
