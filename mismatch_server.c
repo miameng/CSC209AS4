@@ -13,7 +13,7 @@
 #include <sys/signal.h>
 #include "utils.h"
 #include "questions.h"
-
+#include "categorizer.h"
 // -------QQQQQ: without defining the port, I can still connect it-------QQQQQQ
 // --- define the port that the server looking forward to listen to
 #ifndef PORT
@@ -31,6 +31,9 @@ char *errormsg = "The command is not valid at this stage.\n";
 char *emptymsg = "No command is recieved\n";
 char *collect = "Collecting your interests\n";
 char *havetest = "You have already done your test\n";
+char *neg_result = "Sorry, no users with similar interests joined yet\n\n";
+char *pos_result1 = "friend recommendation for user %s:\n";
+char *pos_result2 = "You have total %d potential friend(s)!!!\n\n";
 void addclient(int fd, struct in_addr add);
 void removeclient(int fd);
 
@@ -139,7 +142,7 @@ int main(int argc, char **argv)
 					    if (len > 128)
 					    	username[127] = '\0';
 					    strcpy(curr->username, username);
-						curr->state = 1;
+						curr->state = 0;
 						write(curr->fd, greeting, strlen(greeting));
 					}
 				} else if (curr->state == 0){
@@ -161,11 +164,13 @@ int main(int argc, char **argv)
 							case -2:
 								write(curr->fd, errormsg, strlen(errormsg));
 							case -3:
-								write(curr->fd, havetest, strlen(errormsg));
+								write(curr->fd, havetest, strlen(havetest));
+							case -4:
+								write(curr->fd, emptymsg, strlen(emptymsg));
 							case 1:
 								write(curr->fd, collect, strlen(collect));
 							default:
-								write(curr->fd, emptymsg, strlen(emptymsg));
+								printf("a");
 								
 						}
 					}
@@ -224,6 +229,7 @@ void removeclient(int fd){
     if (*p) {
 		Client *t = (*p)->next;
 			printf("Removing client %s\n", inet_ntoa((*p)->ipaddr));
+			fflush(stdout);
 			free(*p);
 		*p = t; //------------because we have to free the memory of the node *p originally pointing to 
     } else {
@@ -243,3 +249,46 @@ void newconnection(int serv_socket_fd){
 	printf("connection from %s\n", inet_ntoa(client_addr.sin_addr));
 	addclient(client_fd, client_addr.sin_addr);
 }
+
+void wrap_up(){
+    //end of main loop - the user typed "q"
+    print_qtree (root, 0);
+    
+    free_list (interests);
+    free_qtree(root);
+    
+    exit(0);
+}
+
+// print list of potential friends for user
+void print_friends(Node *list, char *name){
+    int friends = 0;
+
+    // iterate over user list and count the number of friends
+    while (list) {
+	// ignore this user
+        if (strcmp(list->str, name)) {
+            friends++;
+             
+	    // if this is the first friend found, print successful message    
+            if (friends == 1)
+                printf(pos_result1, name);
+            
+	    // if friend was found, print his/her name
+            printf("%s, ", list->str);
+        }
+            
+        list = list->next;
+    }
+    
+    // if friends were found, print the number of friends    
+    if (friends){
+        printf("\n");
+        printf(pos_result2, friends);
+        
+    } else {
+        printf("%s", neg_result);    
+    }
+}
+
+
