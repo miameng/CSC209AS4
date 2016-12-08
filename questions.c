@@ -3,9 +3,13 @@
 #include <stdlib.h>
 #include "questions.h"
 
+//global variable for total number of question
+int NUM_QUESTION = 0;
+
 Node * get_list_from_file (char *input_file_name) {
     Node * head = NULL;
     char line[MAX_LINE];
+
     
     // open input file
     FILE *f = fopen(input_file_name, "r");
@@ -20,6 +24,10 @@ Node * get_list_from_file (char *input_file_name) {
     
     // read lines and add to the list
     while (fgets(line, MAX_LINE, f) != NULL){
+        
+        //update the total number of question
+        NUM_QUESTION++;
+
         // remove end-of-line characters
         line[strcspn(line, "\r\n")] = '\0';
         
