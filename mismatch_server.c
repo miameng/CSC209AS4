@@ -44,7 +44,6 @@ int main(int argc, char **argv)
 	int cmd_argc;
 	char *cmd_argv;
 	int cmdresult;
-
 	extern void newconnection(int serv_socket_fd);
 
 	// argument check
@@ -146,9 +145,9 @@ int main(int argc, char **argv)
 						curr->state = 0;
 						write(curr->fd, greeting, strlen(greeting));
 					}
-				} else if (curr->state < NUM_QUESTION){
+				} else if (curr->state <= NUM_QUESTION){
 					// user is answering questions
-					int len = read_from_client(curr, userinput);
+					int len = read(curr->fd, userinput, sizeof userinput);
 					if (len < 0){
 				    	perror("read");
 				    } else if (len == 0) {
@@ -168,7 +167,7 @@ int main(int argc, char **argv)
 								write(curr->fd, havetest, strlen(havetest));
 							case -4:
 								write(curr->fd, emptymsg, strlen(emptymsg));
-							case 1:
+							//case 1:
 								//write(curr->fd, collect, strlen(collect));
 							default:
 								printf("a");
@@ -290,28 +289,5 @@ void print_friends(Node *list, char *name){
         printf("%s", neg_result);    
     }
 }
-
-int read_from_client(Client curr, char* userinput){
-	userinput = curr.buf + curr.inbuf;
-    int room = BUFFER_SIZE - curr.inbuf;
-    int len;
-//read next message into remaining room in buffer
-	if ((len = read(curr.fd, userinput, room)) > 0) {
-		curr.inbuf += len;
-		int where = find_network_newline (curr.buf, curr.inbuf); //find new line
-		if (where >= 0) {
-			curr.buf[where] = '\0'; curr.buf[where+1] = '\0';
-			do_command (curr.buf); //process buffer up to a new line
-			where+=2;
-			// skip over \r\n
-			curr.inbuf -= where;
-			memmove (curr.buf, curr.buf + where, curr.inbuf);
-		}
-		return len;
-	}
-}
-
-
-
 
 

@@ -4,6 +4,7 @@
 
 #include "utils.h"
 char *collect = "Collecting your interests\n";
+char *test_complete = "Test Completed!\n";
 /*
  * Print a formatted error message to stderr.
  */
@@ -30,12 +31,23 @@ int process_args(int cmd_argc, char **cmd_argv, QNode **root, Node *interests,
 		 * need to make sure that the user answers each question only
 		 * once.
 		 */
+
+		//if the test was done already
 		if (current_client->state > 1 + NUM_QUESTION)
 			return -3;
+		//collect string to print
+
 		write(current_client->fd, collect, strlen(collect));
-		// get next question
-		current_client->state = 1;
+
+		//write the first question
+
+		char *first_question;
+		first_question = return_question(interests, current_client->state);
+		write(current_client->fd, first_question, strlen(first_question));
+
+		current_client->state++;
 		return 1;
+
 
 	} else if (strcmp(cmd_argv[0], "get_all") == 0 && cmd_argc == 1) {
 		/* Send the list of best mismatches related to the specified
@@ -58,14 +70,24 @@ int process_args(int cmd_argc, char **cmd_argv, QNode **root, Node *interests,
 
 		QNode *prev;
 		int ans;
-        prev = qtree;
+        prev = qtree;	//??
         ans = validate_answer(cmd_argv[0]);
+        current_client->answer[current_client->state-1] = ans;
 
-        //return_question(root, current_client->state);
- 
-        prev = qtree;
-        qtree = find_branch(qtree, ans);
+        //questions following the first question
+        if(current_client->state == NUM_QUESTION){
+        	write(current_client->fd, test_complete, strlen(test_complete));
+        	current_client->state++;
+        }
+        else{
+        	char* question;
+        	question = return_question(interests, current_client->state);
 
+        	//ask client the question
+        	write(current_client->fd, question, strlen(question));
+
+        	current_client->state++;
+        }
 	}
 	else {
 		/* The input message is not properly formatted. */
