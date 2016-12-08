@@ -74,16 +74,19 @@ int process_args(int cmd_argc, char* userinput, char **cmd_argv, QNode **root, N
 		 	write(current_client->fd, opp_friend_list, strlen(opp_friend_list));
 		 	free(opp_friend_list);
 		 }
+		 return 1;
 
 	} else if (strcmp(cmd_argv[0], "post") == 0 && cmd_argc == 3) {
 		/* Send the specified message stored in cmd_argv[2] to the user
 		 * stored in cmd_argv[1].
 		 */
 		 if (current_client->state < NUM_QUESTION + 1) {
+
 		 	// client need to finish tests first
-		 	//#######
 		 	write(current_client->fd,do_test_first, strlen(do_test_first));
+
 		 } else {
+
 		 	// client need to finish tests first
 		 	//return 5;
 		 	Client *opp = head;
@@ -91,14 +94,17 @@ int process_args(int cmd_argc, char* userinput, char **cmd_argv, QNode **root, N
 		 		opp = opp->next;
 		 	}
 		 	write(opp->fd, cmd_argv[2], strlen(cmd_argv[2]));
+
 		}
+		return 1;
+
 	} else if (validate_answer(userinput) != 2) {
 
 		QNode *prev;
 		int ans;
         prev = qtree;	//??
         ans = validate_answer(cmd_argv[0]);
-        current_client->answer[current_client->state-1] = ans;
+        current_client->answer[current_client->state] = ans;
 
         //questions following the first question
         if(current_client->state == NUM_QUESTION){
@@ -111,9 +117,11 @@ int process_args(int cmd_argc, char* userinput, char **cmd_argv, QNode **root, N
 
         	//ask client the question
         	write(current_client->fd, question, strlen(question));
-
+        	free(question);
         	current_client->state++;
         }
+
+        return 1;
 	}
 	else {
 		/* The input message is not properly formatted. */
