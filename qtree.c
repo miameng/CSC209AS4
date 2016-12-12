@@ -1,5 +1,6 @@
 #include "qtree.h"
 
+
 QNode *add_next_level (QNode *current, Node *list_node) {
     int str_len;
     
@@ -160,22 +161,25 @@ void free_qtree(QNode *current){
 //call the print_opposite_friends
 char* get_opposite_friends(QNode *root, int* answer){
     Node* opp_user_list;
-    QNode* current = root;
+    //QNode* current = root;
+    QNode *current, *prev;
+    prev = current = root;
+    //print_qtree(root, 0);
     int num = 0;
+    //printf("%d\n", NUM_QUESTION);
     int answer_number = NUM_QUESTION;
-    while(answer_number != 0){
+    while(answer_number > 0){
+        prev = current;
         current = find_branch(current, (1- answer[num]));
         num++;
         answer_number--;
     }
-
-    opp_user_list = current->children[1-answer[num]].fchild;
-
+    num--;
+    opp_user_list = prev->children[1-answer[num]].fchild;
+   
+     //printf("%s name for opp user list\n", opp_user_list->str);
     return get_opposite_friends_helper(opp_user_list);
-
 }
-
-
 
 //print the list of opposite friends for user
 char* get_opposite_friends_helper(Node *list){
@@ -198,8 +202,6 @@ char* get_opposite_friends_helper(Node *list){
 
             len += strlen(current->str);
 
-            // for the coma and empty space
-            len += 2;
             current = current->next;
         }
 
@@ -218,10 +220,9 @@ char* get_opposite_friends_helper(Node *list){
         strcpy(get_opposite, prompt_2);
 
         while(current){
-            strcpy(get_opposite, current->str);
-            strcpy(get_opposite, ", ");
+            strcat(get_opposite, current->str);
+            current = current->next;
         }
-
         get_opposite[strlen(get_opposite)] = '\0';
 
         return get_opposite;

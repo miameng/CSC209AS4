@@ -13,8 +13,8 @@
 #include <sys/signal.h>
 #include "utils.h"
 #include "questions.h"
-#include "categorizer.h"
-// -------QQQQQ: without defining the port, I can still connect it-------QQQQQQ
+//#include "categorizer.h"
+
 // --- define the port that the server looking forward to listen to
 #ifndef PORT
   #define PORT 56288
@@ -36,6 +36,8 @@ char *pos_result1 = "friend recommendation for user %s:\n";
 char *pos_result2 = "You have total %d potential friend(s)!!!\n\n";
 void addclient(int fd, struct in_addr add);
 void removeclient(int fd);
+int read_from_client(char* userinput, Client *curr);
+int find_network_newline (char *buf, int inbuf);
 
 
 int main(int argc, char **argv)
@@ -47,10 +49,11 @@ int main(int argc, char **argv)
 	extern void newconnection(int serv_socket_fd);
 
 	// argument check
-	if (argc < 2) {
-        printf ("Usage: mismatch_server text_file\n");
-        return 1;
-    }
+	if (argc < 2) {	
+        	printf ("Usage: mismatch_server text_file\n");
+        	return 1;
+    	}
+
     // get interest
     interests = get_list_from_file(argv[1]);
 
@@ -69,10 +72,10 @@ int main(int argc, char **argv)
 	memset(&server_addr,'\0',sizeof(server_addr)); // clear all bytes to zero
 	server_addr.sin_family = AF_INET; // set up address family NOTE: change to sin_family if this doesn't work
 	server_addr.sin_addr.s_addr = INADDR_ANY;
-    server_addr.sin_port = htons(PORT);
+	server_addr.sin_port = htons(PORT);
 
 	// bind
-	if(bind(serv_socket_fd, (struct socketaddr *)&server_addr, sizeof server_addr)){
+	if(bind(serv_socket_fd, (struct sockaddr *)&server_addr, sizeof server_addr)){
 		perror("bind");
 		return(1);
 	}
@@ -91,6 +94,7 @@ int main(int argc, char **argv)
 	int on = 1;
 	int status = setsockopt(serv_socket_fd, SOL_SOCKET, SO_REUSEADDR,
 		(const char *) &on, sizeof(on));
+
 	if(status == -1) {
 		perror("setsockopt -- REUSEADDR");
 	}
@@ -101,8 +105,8 @@ int main(int argc, char **argv)
 		// ############# get the name of the client ######
 		// the max of the file descriptor, if not connected to any client,
 		// the max should be the fd of the server
-	    int maxfd = serv_socket_fd;
-	    fd_set fdlist;
+	   	int maxfd = serv_socket_fd;
+	   	fd_set fdlist;
 		FD_ZERO(&fdlist);	// set fdlist to zero
 		FD_SET(serv_socket_fd, &fdlist);
 		// loop through client linked list to add fd
@@ -130,40 +134,42 @@ int main(int argc, char **argv)
 					// get user name
 					char username[MAX_NAME];
 					// return how many bytes have been read in
-					// int len = read(curr->fd, username, sizeof username);
+					//int len = read(curr->fd, username, sizeof username - 1);
 					int len = read_from_client(username, curr);
 					if (len < 0){
 				    	perror("read");
-				    } else if (len == 0) {
+
+				    	} else if (len == 0) {
 				    	// innet_ntoa: turn an address into a string 
 						removeclient(curr->fd);
-				    } else{
+
+				        } else{
 					    if (len > 128)
 					    	username[127] = '\0';
-					    strcpy(curr->username, username);
+					   	 username[len] = '\0';
+					    	strcpy(curr->username, username);
 						curr->state = 0;
 						write(curr->fd, greeting, strlen(greeting));
 					}
-				} else if (curr->state <= NUM_QUESTION){
+			
+				//} else if (curr->state <= NUM_QUESTION){
+				} else if (curr->state >= 0){
 					// user is answering questions
 					//int len = read(curr->fd, userinput, sizeof userinput);
+			
 					int len = read_from_client(userinput, curr);
+					printf("%d\n", len);
+					userinput[len] = '\0';
+
 					if (len < 0){
-				    	perror("read");
-				    } else if (len == 0) {
-				    	// innet_ntoa: turn an address into a string 
-						removeclient(curr->fd);
-				    } else{
+				 	   	perror("read\n");
+				 	} else if (len == 0) {
+						//do nothing
+
+				 	} else{
 						cmd_argc = tokenize(userinput, &cmd_argv);
-			//			printf("%d\n", cmd_argc);
-						printf("%s\n", userinput);
-			//			printf("%s\n", curr->username);
-			//			printf("%d\n", curr->fd);
-			//			printf("%s\n", cmd_argv[0]);
-			//			printf("%d ---\n", curr->state);
+						cmdresult = process_args(cmd_argc, &cmd_argv, &root, interests, curr, head);
 
-
-						cmdresult = process_args(cmd_argc, userinput, &cmd_argv, &root, interests, curr, head);
 						switch (cmdresult){
 							case -1:
 								write(curr->fd, goodbye, strlen(goodbye));
@@ -187,8 +193,6 @@ int main(int argc, char **argv)
 								break;
 						}
 					}
-				} else {
-					// user already finished tests
 				}
 			}
 			// if the fd of the server is in the list, means that there are new
@@ -199,7 +203,6 @@ int main(int argc, char **argv)
 				write(head->fd, askname, strlen(askname));
 			}
 		}
-		
 	}
 	return(0);
 }
@@ -211,9 +214,11 @@ void addclient(int fd, struct in_addr add){
 		fprintf(stderr, "fail to allocate memory\n");
 		exit(1);
 	}
+
 	p->fd = fd;
 	p->ipaddr = add;
 	p->state = -1;
+	p->answer = (int*)malloc(sizeof(int)*NUM_QUESTION);
 	p->next = head;
 	head = p;
 
@@ -222,32 +227,22 @@ void addclient(int fd, struct in_addr add){
 
 
 void removeclient(int fd){
-	/*
-	Client *p = head;
-	// -----------QQQ try to find a way to reduce the running time
-	while(p != NULL){
-		p = p->next;
-		if (p->fd == fd){ 
-			Client *temp;
-			temp = p->next;
-			free(p);
-			p = temp;
-		}
-	}
-	printf("Removing client #######");*/
+
     Client **p;
     //------------- loop over the whole linked list, and set the pointer pointing to the node I wanna remove
     for (p = &head; *p && (*p)->fd != fd; p = &(*p)->next);
 	//------------- for ( p = *top p && p->fd != fd; p = p->next)
     if (*p) {
 		Client *t = (*p)->next;
-			printf("Removing client %s\n", inet_ntoa((*p)->ipaddr));
+			printf("Removing client %s\n", (*p)->username);
 			fflush(stdout);
 			free(*p);
 		*p = t; //------------because we have to free the memory of the node *p originally pointing to 
     } else {
 		fprintf(stderr, "Trying to remove fd %d, but I don't know about it\n", fd);
     }
+}
+
 	
 void newconnection(int serv_socket_fd){
 	struct sockaddr_in client_addr;
@@ -302,12 +297,26 @@ void print_friends(Node *list, char *name){
 }
 
 
+int find_network_newline (char *buf, int inbuf) {
+	int i;
+	for (i = 0; i < inbuf - 1; i++){
+		if ((buf[i] == '\r') && (buf[i + 1] == '\n')){
+			printf("%d the newline\n", i);
+			return (i);
+		}
+	}
+
+	return -1;
+}
+
 int read_from_client(char* userinput, Client *curr){
-	//userinput = curr.buf + curr.inbuf;
+
 	int room = BUFFER_SIZE - curr->inbuf;
 	int nbytes;
 	//read next message into remaining room in buffer
-	if ((nbytes = read(curr->fd, userinput, room)) > 0) {
+
+	if ((nbytes = read(curr->fd, userinput, room)) > 0) {		
+
 		curr->inbuf += nbytes;
 		int where = find_network_newline (curr->buf, curr->inbuf); //find new line
 		if (where >= 0) {
@@ -315,14 +324,11 @@ int read_from_client(char* userinput, Client *curr){
 		//do_command (buf); //process buffer up to a new line
 		where+=2;
 		curr->inbuf -= where;
-		memmove (curr->buf, curr->buf + where, curr->inbuf);
+		memmove(curr->buf, curr->buf+where, curr->inbuf);
+		}
+	}
+	printf("number of bytes %d\n", nbytes);
 
-int find_network_newline (char *buf, int inbuf) {
-	int i;
-	for (i = 0; i < inbuf - 1; i++)
-		if ((buf[i] == '\r') && (buf[i + 1] == '\n'))
-			return (i);
-	return -1;
+	return nbytes;
 }
-
 

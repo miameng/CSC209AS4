@@ -1,11 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "utils.h"
 char *collect = "Collecting your interests\n";
 char *do_test_first = "Please finish the test first. Type in 'do_test'!\n";
 char *test_complete = "Test Completed!\n";
+char *syntaxerror = "Incorrect syntax\n";
+char *testmsg = "Iamhere\n";
+char *post_msg_err = "Did not find the client, please try again.\n";
+
 /*
  * Print a formatted error message to stderr.
  */
@@ -17,9 +22,11 @@ void error(char *msg) {
  * Read and process commands
  */
 
-int process_args(int cmd_argc, char* userinput, char **cmd_argv, QNode **root, Node *interests,
+int process_args(int cmd_argc, char **cmd_argv, QNode **root, Node *interests,
 		 struct client *current_client, struct client *head) {
 	QNode *qtree = *root;
+	printf("command argument %d\n", cmd_argc);
+
 	if (cmd_argc <= 0) {
 		return -4;
 
@@ -33,28 +40,25 @@ int process_args(int cmd_argc, char* userinput, char **cmd_argv, QNode **root, N
 		 * need to make sure that the user answers each question only
 		 * once.
 		 */
-
+		 
 		//if the test was done already
-		if (current_client->state > 1 + NUM_QUESTION)
+		if (current_client->state > NUM_QUESTION)
 			return -3;
 		//collect string to print
 
 		write(current_client->fd, collect, strlen(collect));
-
 		//write the first question
-
+		
 		char * first_question; 
 		first_question = return_question(interests, current_client->state);
-
-
 		write(current_client->fd, first_question, strlen(first_question));
 
 		free(first_question);
-
+		
 		//int curr_state = current_client->state;
 
-		//current_client->state = curr_state+1;
-
+		current_client->state++;
+	
 		return 1;
 
 
@@ -63,16 +67,20 @@ int process_args(int cmd_argc, char* userinput, char **cmd_argv, QNode **root, N
 		 * user. If the user has not taked the test yet, return the
 		 * corresponding error value (different than 0 and -1).
 		 */
+
 		 if (current_client->state < NUM_QUESTION + 1) {
 		 	// client need to finish tests first
 		 	//#######
 		 	write(current_client->fd,do_test_first, strlen(do_test_first));
 
 		 } else {
+
 		 	char * opp_friend_list;
 		 	opp_friend_list = get_opposite_friends(qtree, current_client->answer);
+
 		 	write(current_client->fd, opp_friend_list, strlen(opp_friend_list));
-		 	free(opp_friend_list);
+		 	if (!opp_friend_list)
+		 		free(opp_friend_list);
 		 }
 		 return 1;
 
@@ -80,36 +88,67 @@ int process_args(int cmd_argc, char* userinput, char **cmd_argv, QNode **root, N
 		/* Send the specified message stored in cmd_argv[2] to the user
 		 * stored in cmd_argv[1].
 		 */
-		 if (current_client->state < NUM_QUESTION + 1) {
+		printf("GET INTO THE POST\n");
 
-		 	// client need to finish tests first
-		 	write(current_client->fd,do_test_first, strlen(do_test_first));
+		char* test = "abc";
 
-		 } else {
-
-		 	// client need to finish tests first
-		 	//return 5;
-		 	Client *opp = head;
-		 	while((opp->next) && (opp->next->username != cmd_argv[1])){
-		 		opp = opp->next;
-		 	}
-		 	write(opp->fd, cmd_argv[2], strlen(cmd_argv[2]));
-
+		if(write(current_client->fd, test, strlen(test))<0){
+			perror("write");
 		}
-		return 1;
+	
 
-	} else if (validate_answer(userinput) != 2) {
 
-		QNode *prev;
+		 if(current_client->state < NUM_QUESTION + 1){
+			printf("wtf??didnt get in???\n");
+			char* cantwrite = "not able to write??\n";
+
+			write(current_client->fd,cantwrite, strlen(cantwrite));
+
+		 	// client need to finish tests first
+		 	write(current_client->fd, do_test_first, strlen(do_test_first));
+
+			printf("problem with write?\n");
+			return -2;
+		 } else {
+		 	Client *opp = head;
+			printf("tst in post, %s\n", opp->username);
+		 	while((opp) && strcmp(opp->username, cmd_argv[1])){
+		 		opp = opp->next;
+				printf("test if get into the loop in post\n");
+		 	}
+
+			if(opp==NULL){
+				write(current_client->fd, post_msg_err, strlen(post_msg_err));
+			}
+			else{
+		 		write(opp->fd, cmd_argv[2], strlen(cmd_argv[2]));
+
+			}
+		}
+		printf("finished post\n");
+		return 0;
+
+	} else if (current_client->state <= NUM_QUESTION && validate_answer(cmd_argv[0]) != 2 && cmd_argc == 1) {
+
+		//QNode *prev;
 		int ans;
-        prev = qtree;	//??
-        ans = validate_answer(cmd_argv[0]);
-        current_client->answer[current_client->state] = ans;
+        	//prev = qtree;	//??
+ 	       ans = validate_answer(cmd_argv[0]);
+		current_client->answer[current_client->state-1] = ans;
 
-        //questions following the first question
-        if(current_client->state == NUM_QUESTION){
-        	write(current_client->fd, test_complete, strlen(test_complete));
-        	current_client->state++;
+		//printf("%d\n", current_client->answer[current_client->state-1]);
+	        //printf("%d\n", current_client->state);
+	        //printf("%d\n", ans);
+	        //questions following the first question
+	        if(current_client->state == NUM_QUESTION){
+        		// user have completed all tasks
+        		write(current_client->fd, test_complete, strlen(test_complete));
+        		current_client->state++;
+			printf("%d, check state\n", current_client->state);
+        		store_user(*root, current_client->username, current_client->answer);
+
+        		// Print tree for testing purpose
+        		//print_qtree(*root, 0);
         }
         else{
         	char* question;
@@ -125,8 +164,9 @@ int process_args(int cmd_argc, char* userinput, char **cmd_argv, QNode **root, N
 	}
 	else {
 		/* The input message is not properly formatted. */
-		error("Incorrect syntax");
-		return -2;
+		//error("Incorrect syntax");
+		write(current_client->fd, syntaxerror, strlen(syntaxerror));
+		return 0;
 	}
 	return 0;
 }
@@ -164,10 +204,10 @@ int tokenize(char *cmd, char **cmd_argv) {
 
 
 int validate_answer(char *answer){
-    char *invalid_message = "ERROR: Answer must be one of 'y', 'n', 'q'.\n";
+//    char *invalid_message = "ERROR: Answer must be one of 'y', 'n', 'q'.\n";
     
     if (strlen(answer) > 3){
-        printf("%s", invalid_message);
+       // printf("%s", invalid_message);
         return 2;
     }
  
@@ -176,7 +216,26 @@ int validate_answer(char *answer){
         
     if (answer[0] == 'y' || answer[0] == 'Y')
         return 1;
-    printf("%s", invalid_message);
+   // printf("%s", invalid_message);
     return 2;
 }
 
+void store_user(QNode* root, char* name, int* answer){
+    QNode *prev, *current;
+    prev = current = root;
+    Node* user_list;
+    int total_num_question = NUM_QUESTION;
+    int num = 0;
+    while(total_num_question > 0){
+    	prev = current;
+    	//printf("%d\n", answer[num]);
+        current = find_branch(current, answer[num]);
+        num++;
+        total_num_question--;
+        //printf("%d -- test for store user", num);
+    }
+    num--;
+   // printf("%d\n", num);
+    user_list = prev->children[answer[num]].fchild;
+    prev->children[answer[num]].fchild = add_user(user_list, name);
+}

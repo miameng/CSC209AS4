@@ -81,7 +81,7 @@ char* return_question(Node *root, int question_number){
     Node *current;
     current = root;
 
-    while(question_number > 1){
+    while(question_number > 0){
         current = current->next;
         question_number--;
     }
